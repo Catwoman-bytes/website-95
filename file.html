@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 95 Nostalgia</title>
+    <style>
+        * {
+            font-family: 'MS Sans Serif', Arial, sans-serif;
+        }
+        body {
+            background: #008080;
+            margin: 0;
+            padding: 20px;
+            cursor: default;
+            transition: all 0.3s;
+        }
+        body.dark-mode {
+            background: #1a1a2e;
+            cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><circle cx="16" cy="16" r="8" fill="yellow"/></svg>') 16 16, auto;
+        }
+        body.dark-mode .window {
+            background: #2d2d44;
+            border-color: #666;
+        }
+        body.dark-mode .title-bar {
+            background: linear-gradient(90deg, #440044, #220022);
+        }
+        body.dark-mode .content {
+            color: #ccc;
+        }
+        .window {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #808080 #808080 #dfdfdf;
+            box-shadow: 1px 1px 0 #ffffff inset, 2px 2px 0 #dfdfdf inset, 1px 1px 0 #808080, 2px 2px 0 #000000;
+            margin: 20px 0;
+            font-size: 11px;
+        }
+        .title-bar {
+            background: linear-gradient(90deg, #000080, #1084d7);
+            color: white;
+            padding: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        .title-bar-controls {
+            display: flex;
+            gap: 2px;
+        }
+        .btn {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #808080 #808080 #dfdfdf;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            min-width: 75px;
+        }
+        .btn:active {
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+        }
+        .content {
+            padding: 10px;
+            background: #c0c0c0;
+        }
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid;
+            border-color: #dfdfdf #808080 #808080 #dfdfdf;
+        }
+        .tab {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #808080 #808080 #dfdfdf;
+            padding: 4px 16px;
+            cursor: pointer;
+            border-bottom: none;
+            margin-bottom: -2px;
+        }
+        .tab.active {
+            background: #c0c0c0;
+            border-color: #dfdfdf #808080 #808080 #dfdfdf;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        textarea, input {
+            background: #ffffff;
+            border: 2px solid;
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+            font-family: 'MS Sans Serif', Arial;
+            font-size: 11px;
+            padding: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .guestbook-entry {
+            background: #e0e0e0;
+            border: 1px solid #808080;
+            padding: 8px;
+            margin: 8px 0;
+            border-radius: 2px;
+        }
+        .guestbook-entry strong {
+            color: #000080;
+        }
+        canvas {
+            border: 2px solid;
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+            display: block;
+            margin: 10px 0;
+            background: white;
+            cursor: crosshair;
+        }
+        .wordle-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 40px);
+            gap: 4px;
+            margin: 10px 0;
+        }
+        .wordle-tile {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #808080;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background: #ffffff;
+            text-transform: uppercase;
+        }
+        .wordle-tile.correct {
+            background: #6ca965;
+            color: white;
+        }
+        .wordle-tile.present {
+            background: #c8b458;
+            color: white;
+        }
+        .wordle-tile.absent {
+            background: #787c7e;
+            color: white;
+        }
+        .cooking-stage {
+            border: 2px solid #808080;
+            padding: 20px;
+            text-align: center;
+            background: #e0e0e0;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            border: 2px solid;
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+            height: 20px;
+            background: #c0c0c0;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #000080;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .dark-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        label {
+            display: inline-block;
+            margin: 8px 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="dark-toggle">
+        <button class="btn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+    </div>
+
+    <div class="window">
+        <div class="title-bar">
+            <span>Welcome.exe</span>
+            <div class="title-bar-controls">
+                <button class="btn" style="width: 16px; padding: 2px;">_</button>
+                <button class="btn" style="width: 16px; padding: 2px;">□</button>
+                <button class="btn" style="width: 16px; padding: 2px;">✕</button>
+            </div>
+        </div>
+        <div class="content">
+            <h1>🖥️ Windows 95 Nostalgia Hub</h1>
+            <p>Welcome to the ultimate retro experience!</p>
+        </div>
+    </div>
+
+    <div class="window">
+        <div class="title-bar">
+            <span>Applications</span>
+        </div>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab(event, 'guestbook')">📖 Guestbook</div>
+            <div class="tab" onclick="switchTab(event, 'wordle')">🎮 Wordle</div>
+            <div class="tab" onclick="switchTab(event, 'cooking')">👨‍🍳 Cake Baker</div>
+        </div>
+
+        <div id="guestbook" class="tab-content active">
+            <div class="content">
+                <h2>Guestbook</h2>
+                <div>
+                    <label>Name:</label>
+                    <input type="text" id="guestName" placeholder="Enter your name">
+                </div>
+                <div style="margin-top: 8px;">
+                    <label>Message:</label>
+                    <textarea id="guestMessage" rows="4" placeholder="Leave a message..."></textarea>
+                </div>
+                <button class="btn" onclick="addGuestbookEntry()">Sign</button>
+                <button class="btn" onclick="showDrawingCanvas()">🎨 Draw Your Own</button>
+
+                <div id="drawingContainer" style="display: none; margin-top: 10px;">
+                    <label>Draw Something:</label>
+                    <canvas id="drawingCanvas" width="300" height="200"></canvas>
+                    <div>
+                        <button class="btn" onclick="clearCanvas()">Clear</button>
+                        <button class="btn" onclick="saveDrawing()">Save Drawing</button>
+                    </div>
+                </div>
+
+                <h3>Entries:</h3>
+                <div id="guestbookEntries"></div>
+            </div>
+        </div>
+
+        <div id="wordle" class="tab-content">
+            <div class="content">
+                <h2>Wordle Game</h2>
+                <p>Guess the 5-letter word!</p>
+                <div id="wordleAttempts"></div>
+                <div style="margin: 10px 0;">
+                    <input type="text" id="wordleGuess" maxlength="5" placeholder="Enter 5-letter word" style="width: 150px;">
+                    <button class="btn" onclick="submitWordleGuess()">Guess</button>
+                </div>
+                <p id="wordleStatus"></p>
+            </div>
+        </div>
+
+        <div id="cooking" class="tab-content">
+            <div class="content">
+                <h2>🎂 Bake a Cake</h2>
+                <p id="cookingStatus">Let's bake a cake!</p>
+                <div id="cookingStages"></div>
+                <button class="btn" onclick="startCooking()">Start Baking</button>
+                <button class="btn" onclick="nextStage()">Next Step</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark Mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Tab Switching
+        function switchTab(e, tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            e.target.classList.add('active');
+        }
+
+        // Guestbook
+        let guestbookEntries = JSON.parse(localStorage.getItem('guestbook')) || [];
+
+        function addGuestbookEntry() {
+            const name = document.getElementById('guestName').value;
+            const message = document.getElementById('guestMessage').value;
+            
+            if (name && message) {
+                guestbookEntries.push({type: 'text', name, message});
+                localStorage.setItem('guestbook', JSON.stringify(guestbookEntries));
+                document.getElementById('guestName').value = '';
+                document.getElementById('guestMessage').value = '';
+                displayGuestbookEntries();
+            }
+        }
+
+        function displayGuestbookEntries() {
+            const container = document.getElementById('guestbookEntries');
+            container.innerHTML = '';
+            guestbookEntries.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'guestbook-entry';
+                if (entry.type === 'text') {
+                    div.innerHTML = `<strong>${entry.name}:</strong> ${entry.message}`;
+                } else {
+                    div.innerHTML = `<strong>${entry.name}'s Drawing:</strong><br><img src="${entry.image}" style="max-width: 100%; border: 1px solid #000;">`;
+                }
+                container.appendChild(div);
+            });
+        }
+
+        // Drawing Canvas
+        let canvas, ctx;
+        function showDrawingCanvas() {
+            document.getElementById('drawingContainer').style.display = 'block';
+            canvas = document.getElementById('drawingCanvas');
+            ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            setupDrawing();
+        }
+
+        function setupDrawing() {
+            let isDrawing = false;
+            canvas.addEventListener('mousedown', () => isDrawing = true);
+            canvas.addEventListener('mouseup', () => isDrawing = false);
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                ctx.fillStyle = 'black';
+                ctx.fillRect(e.clientX - rect.left, e.clientY - rect.top, 3, 3);
+            });
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveDrawing() {
+            const name = document.getElementById('guestName').value || 'Anonymous';
+            guestbookEntries.push({type: 'drawing', name, image: canvas.toDataURL()});
+            localStorage.setItem('guestbook', JSON.stringify(guestbookEntries));
+            document.getElementById('drawingContainer').style.display = 'none';
+            displayGuestbookEntries();
+        }
+
+        displayGuestbookEntries();
+
+        // Wordle
+        const wordList = ['REACT', 'MOUSE', 'PIXEL', 'AUDIO', 'VIRUS', 'MODEM', 'CHART', 'CRAFT'];
+        let wordleWord = wordList[Math.floor(Math.random() * wordList.length)];
+        let wordleAttempts = 0;
+        let wordleGuesses = [];
+
+        function submitWordleGuess() {
+            const guess = document.getElementById('wordleGuess').value.toUpperCase();
+            if (guess.length !== 5) {
+                document.getElementById('wordleStatus').innerText = 'Please enter 5 letters!';
+                return;
+            }
+            
+            wordleGuesses.push(guess);
+            document.getElementById('wordleGuess').value = '';
+            displayWordleAttempts();
+
+            if (guess === wordleWord) {
+                document.getElementById('wordleStatus').innerText = `🎉 You won in ${wordleGuesses.length} attempts!`;
+            } else if (wordleGuesses.length >= 6) {
+                document.getElementById('wordleStatus').innerText = `Game Over! Word was: ${wordleWord}`;
+            }
+        }
+
+        function displayWordleAttempts() {
+            const container = document.getElementById('wordleAttempts');
+            container.innerHTML = '';
+            wordleGuesses.forEach(guess => {
+                const row = document.createElement('div');
+                row.className = 'wordle-grid';
+                for (let i = 0; i < 5; i++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'wordle-tile';
+                    tile.innerText = guess[i];
+                    if (guess[i] === wordleWord[i]) {
+                        tile.classList.add('correct');
+                    } else if (wordleWord.includes(guess[i])) {
+                        tile.classList.add('present');
+                    } else {
+                        tile.classList.add('absent');
+                    }
+                    row.appendChild(tile);
+                }
+                container.appendChild(row);
+            });
+        }
+
+        // Cooking Game
+        const cookingStages = [
+            {name: 'Mix Ingredients', time: 3},
+            {name: 'Pour Batter', time: 2},
+            {name: 'Bake', time: 5},
+            {name: 'Cool Down', time: 3}
+        ];
+        let currentStage = 0;
+        let stageDuration = 0;
+
+        function startCooking() {
+            currentStage = 0;
+            nextStage();
+        }
+
+        function nextStage() {
+            if (currentStage >= cookingStages.length) {
+                document.getElementById('cookingStatus').innerText = '🎉 Cake is ready!';
+                return;
+            }
+            
+            const stage = cookingStages[currentStage];
+            document.getElementById('cookingStatus').innerText = `${stage.name}...`;
+            stageDuration = stage.time;
+            updateProgressBar(0);
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 100 / (stage.time * 10);
+                updateProgressBar(progress);
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    currentStage++;
+                }
+            }, 100);
+        }
+
+        function updateProgressBar(progress) {
+            const bar = document.querySelector('.progress-fill');
+            if (bar) {
+                bar.style.width = progress + '%';
+            }
+        }
+
+        const stagesDiv = document.getElementById('cookingStages');
+        stagesDiv.innerHTML += '<div class="progress-bar"><div class="progress-fill"></div></div>';
+    </script>
+</body>
+</html>
